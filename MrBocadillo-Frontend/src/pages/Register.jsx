@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 function Register() {
+  const API = "https://mrbocadillo-backend.onrender.com";
+
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -24,14 +26,14 @@ function Register() {
     e.preventDefault();
 
     if (!form.rol) {
-      setMessage("Por favor, selecciona un rol.");
+      setMessage("⚠ Por favor, selecciona un rol.");
       return;
     }
 
     const url =
       form.rol === "CLIENTE"
-        ? "http://localhost:8080/api/auth/registrar/cliente"
-        : "http://localhost:8080/api/auth/registrar/tienda";
+        ? `${API}/api/auth/registrar/cliente`
+        : `${API}/api/auth/registrar/tienda`;
 
     const body =
       form.rol === "CLIENTE"
@@ -56,14 +58,12 @@ function Register() {
     try {
       const response = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
       if (response.ok) {
-        setMessage("✅ Registro completado con éxito. ¡Ya puedes iniciar sesión!");
+        setMessage("✅ Registro completado. ¡Ya puedes iniciar sesión!");
         setForm({
           username: "",
           password: "",
@@ -85,30 +85,32 @@ function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-200 via-yellow-100 to-orange-300">
-      <div className="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-md text-center">
-        
-        {/* 🔸 Logo de la app */}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-200 via-yellow-100 to-orange-300 p-4">
+      
+      <div className="bg-white shadow-2xl rounded-3xl p-8 sm:p-10 w-full max-w-md text-center">
+
+        {/* Logo */}
         <div className="flex justify-center mb-4">
           <img
             src="/logo.png"
             alt="Logo MrBocadillo"
-            className="w-40 h-auto drop-shadow-md"
+            className="w-32 sm:w-40 h-auto drop-shadow-md"
           />
         </div>
 
-        <p className="text-gray-500 mb-8">
-          Crea tu cuenta y empieza a pedir o vender bocadillos deliciosos
+        <p className="text-gray-500 mb-6">
+          Crea tu cuenta y empieza a pedir o vender bocadillos 🍔
         </p>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
+
           <input
             type="text"
             name="username"
             placeholder="Nombre de usuario"
             value={form.username}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
             required
           />
 
@@ -118,7 +120,7 @@ function Register() {
             placeholder="Correo electrónico"
             value={form.email}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
             required
           />
 
@@ -128,7 +130,7 @@ function Register() {
             placeholder="Teléfono"
             value={form.telefono}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
 
           <input
@@ -137,7 +139,7 @@ function Register() {
             placeholder="Contraseña"
             value={form.password}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
             required
           />
 
@@ -145,13 +147,15 @@ function Register() {
             name="rol"
             value={form.rol}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
             required
           >
             <option value="">Selecciona tu rol</option>
             <option value="CLIENTE">Cliente 🍔</option>
             <option value="TIENDA">Tienda 🏪</option>
           </select>
+
+          {/* CAMPOS DINÁMICOS */}
 
           {form.rol === "CLIENTE" && (
             <>
@@ -161,7 +165,7 @@ function Register() {
                 placeholder="Nombre"
                 value={form.nombre}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
               <input
                 type="text"
@@ -169,7 +173,7 @@ function Register() {
                 placeholder="Apellido"
                 value={form.apellido}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </>
           )}
@@ -182,7 +186,7 @@ function Register() {
                 placeholder="Nombre de la tienda"
                 value={form.nombre}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
 
               <input
@@ -191,23 +195,23 @@ function Register() {
                 placeholder="Dirección"
                 value={form.direccion}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
 
               <input
                 type="text"
                 name="imagenUrl"
-                placeholder="URL de imagen o logo (opcional)"
+                placeholder="URL del logo (opcional)"
                 value={form.imagenUrl}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </>
           )}
 
           <button
             type="submit"
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition-all duration-200"
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition transform hover:scale-[1.02]"
           >
             Registrarse
           </button>
@@ -228,4 +232,4 @@ function Register() {
   );
 }
 
-export default Register;
+export default Register;

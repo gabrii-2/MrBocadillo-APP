@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 function HacerPedido() {
-  const { id } = useParams(); // ID de la tienda destino
+  const { id } = useParams(); // ID de la tienda
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
@@ -15,13 +15,15 @@ function HacerPedido() {
   const [carrito, setCarrito] = useState([]);
   const [observaciones, setObservaciones] = useState("");
 
+  const API = "https://mrbocadillo-backend.onrender.com";
+
   // ================================
   // 1️⃣ Cargar cliente logueado
   // ================================
   useEffect(() => {
     const fetchCliente = async () => {
       try {
-        const resp = await fetch("http://localhost:8080/api/clientes", {
+        const resp = await fetch(`${API}/api/clientes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -31,7 +33,6 @@ function HacerPedido() {
         const cliente = data.find((c) => c.username === username);
 
         if (cliente) setClienteId(cliente.id);
-        else console.error("Cliente no encontrado.");
       } catch (err) {
         console.error("Error cargando cliente:", err);
       }
@@ -45,7 +46,7 @@ function HacerPedido() {
   // ================================
   useEffect(() => {
     const fetchTienda = async () => {
-      const resp = await fetch(`http://localhost:8080/api/tiendas/${id}`);
+      const resp = await fetch(`${API}/api/tiendas/${id}`);
       const data = await resp.json();
       setTienda(data);
     };
@@ -54,14 +55,11 @@ function HacerPedido() {
   }, [id]);
 
   // ================================
-  // 3️⃣ Cargar bocadillos
+  // 3️⃣ Cargar bocadillos de la tienda
   // ================================
   useEffect(() => {
     const fetchBocadillos = async () => {
-      const resp = await fetch(
-        `http://localhost:8080/api/bocadillos/tienda/${id}/listar`
-      );
-
+      const resp = await fetch(`${API}/api/bocadillos/tienda/${id}/listar`);
       const data = await resp.json();
       setBocadillos(data);
     };
@@ -79,8 +77,8 @@ function HacerPedido() {
   // ================================
   // 🗑 Quitar del carrito
   // ================================
-  const quitarDelCarrito = (index) => {
-    setCarrito((prev) => prev.filter((_, i) => i !== index));
+  const quitarDelCarrito = (i) => {
+    setCarrito((prev) => prev.filter((_, index) => index !== i));
   };
 
   // ================================
@@ -89,7 +87,7 @@ function HacerPedido() {
   const total = carrito.reduce((acc, b) => acc + b.precio, 0);
 
   // ================================
-  // 🚀 Enviar pedido (FORMATO CORRECTO)
+  // 🚀 Realizar pedido
   // ================================
   const realizarPedido = async () => {
     if (!clienteId) return alert("Error: Cliente no encontrado.");
@@ -97,13 +95,11 @@ function HacerPedido() {
 
     const body = {
       observaciones,
-      bocadillos: carrito.map((b) => ({ id: b.id })), // 👈 FORMATO CORRECTO
+      bocadillos: carrito.map((b) => ({ id: b.id })),
     };
 
-    console.log("📦 BODY ENVIADO AL BACKEND:", body);
-
     const resp = await fetch(
-      `http://localhost:8080/api/pedidos/cliente/${clienteId}/tienda/${id}`,
+      `${API}/api/pedidos/cliente/${clienteId}/tienda/${id}`,
       {
         method: "POST",
         headers: {
@@ -119,8 +115,7 @@ function HacerPedido() {
       navigate("/clienteDashboard");
     } else {
       const errorText = await resp.text();
-      console.error("❌ ERROR DEL SERVIDOR:", errorText);
-      alert("Error al realizar pedido:\n" + errorText);
+      alert("Error:\n" + errorText);
     }
   };
 
@@ -128,7 +123,9 @@ function HacerPedido() {
     return <p className="p-6 text-center text-xl">Cargando pedido...</p>;
 
   return (
-    <div className="min-h-screen bg-orange-50 p-6 md:p-10">
+    <div className="min-h-screen bg-orange-50 p-4 md:p-10">
+
+      {/* VOLVER */}
       <button
         onClick={() => navigate(-1)}
         className="mb-6 bg-orange-500 text-white px-5 py-2 rounded-xl hover:bg-orange-600 transition shadow-md"
@@ -136,11 +133,14 @@ function HacerPedido() {
         ⬅ Volver
       </button>
 
-      <h1 className="text-4xl md:text-5xl font-extrabold text-orange-600 text-center mb-10">
+      {/* TÍTULO */}
+      <h1 className="text-3xl md:text-5xl font-extrabold text-orange-600 text-center mb-8">
         Pedido a {tienda.nombre}
       </h1>
 
+      {/* GRID RESPONSIVE */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
         {/* LISTA DE BOCADILLOS */}
         <div className="lg:col-span-2">
           <h2 className="text-3xl font-bold mb-4 text-orange-600">
@@ -175,7 +175,7 @@ function HacerPedido() {
           </div>
         </div>
 
-        {/* RESUMEN */}
+        {/* RESUMEN DEL PEDIDO */}
         <div className="bg-white p-6 rounded-3xl shadow-xl">
           <h2 className="text-2xl font-bold text-orange-600 mb-4">
             🛒 Tu pedido
@@ -205,6 +205,7 @@ function HacerPedido() {
           <label className="block mt-4 font-semibold text-gray-700">
             Observaciones:
           </label>
+
           <textarea
             className="w-full p-3 mt-1 rounded-xl border shadow"
             rows="4"

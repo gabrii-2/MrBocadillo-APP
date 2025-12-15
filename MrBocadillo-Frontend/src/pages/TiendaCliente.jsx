@@ -5,14 +5,19 @@ function TiendaCliente() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const API = "https://mrbocadillo-backend.onrender.com";
+
   const [tienda, setTienda] = useState(null);
   const [bocadillos, setBocadillos] = useState([]);
 
   const token = localStorage.getItem("token");
 
+  // ============================
+  // Cargar tienda
+  // ============================
   useEffect(() => {
     const fetchTienda = async () => {
-      const resp = await fetch(`http://localhost:8080/api/tiendas/${id}`, {
+      const resp = await fetch(`${API}/api/tiendas/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await resp.json();
@@ -21,12 +26,14 @@ function TiendaCliente() {
     fetchTienda();
   }, [id]);
 
+  // ============================
+  // Cargar bocadillos
+  // ============================
   useEffect(() => {
     const fetchBocadillos = async () => {
-      const resp = await fetch(
-        `http://localhost:8080/api/bocadillos/tienda/${id}/listar`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const resp = await fetch(`${API}/api/bocadillos/tienda/${id}/listar`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await resp.json();
       setBocadillos(data);
     };
@@ -83,7 +90,7 @@ function TiendaCliente() {
         Nuestro catálogo 🥪
       </h2>
 
-      {/* GRID DE BOcadillos */}
+      {/* GRID DE BOCADILLOS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {bocadillos.map((b) => (
           <div

@@ -5,6 +5,8 @@ import { FiEdit2, FiTrash2, FiX, FiCheck, FiImage } from "react-icons/fi";
 function TiendaDashboard() {
   const navigate = useNavigate();
 
+  const API = "https://mrbocadillo-backend.onrender.com";
+
   const token = localStorage.getItem("token");
   const username = localStorage.getItem("username");
 
@@ -24,7 +26,7 @@ function TiendaDashboard() {
   // ============================
   useEffect(() => {
     const fetchTienda = async () => {
-      const resp = await fetch("http://localhost:8080/api/tiendas", {
+      const resp = await fetch(`${API}/api/tiendas`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -45,10 +47,9 @@ function TiendaDashboard() {
     if (!tienda) return;
 
     const fetchBocadillos = async () => {
-      const resp = await fetch(
-        `http://localhost:8080/api/bocadillos/tienda/${tienda.id}/listar`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const resp = await fetch(`${API}/api/bocadillos/tienda/${tienda.id}/listar`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const data = await resp.json();
       setBocadillos(data);
@@ -64,10 +65,9 @@ function TiendaDashboard() {
     if (!tienda) return;
 
     const fetchPedidos = async () => {
-      const resp = await fetch(
-        `http://localhost:8080/api/pedidos/tienda/${tienda.id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const resp = await fetch(`${API}/api/pedidos/tienda/${tienda.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const data = await resp.json();
       setPedidos(data);
@@ -77,7 +77,7 @@ function TiendaDashboard() {
   }, [tienda]);
 
   // ============================
-  // START EDIT — FALTABA ESTA FUNCIÓN
+  // INICIAR EDICIÓN
   // ============================
   const startEdit = (b) => {
     setEditId(b.id);
@@ -90,16 +90,13 @@ function TiendaDashboard() {
   };
 
   // ============================
-  // CAMBIAR ESTADO (FUNCIONA)
+  // CAMBIAR ESTADO DE PEDIDO
   // ============================
   const cambiarEstado = async (pedidoId, nuevoEstado) => {
-    const resp = await fetch(
-      `http://localhost:8080/api/pedidos/${pedidoId}/preparar`,
-      {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    const resp = await fetch(`${API}/api/pedidos/${pedidoId}/preparar`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     if (resp.ok) {
       setPedidos((prev) =>
@@ -114,17 +111,14 @@ function TiendaDashboard() {
   // GUARDAR EDICIÓN
   // ============================
   const saveEdit = async () => {
-    const resp = await fetch(
-      `http://localhost:8080/api/bocadillos/${editId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(editData),
-      }
-    );
+    const resp = await fetch(`${API}/api/bocadillos/${editId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(editData),
+    });
 
     if (resp.ok) {
       setBocadillos((prev) =>
@@ -138,13 +132,10 @@ function TiendaDashboard() {
   // BORRAR BOCADILLO
   // ============================
   const deleteBocadillo = async () => {
-    const resp = await fetch(
-      `http://localhost:8080/api/bocadillos/${deleteConfirmId}`,
-      {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    const resp = await fetch(`${API}/api/bocadillos/${deleteConfirmId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     if (resp.ok) {
       setBocadillos((prev) =>
@@ -211,7 +202,7 @@ function TiendaDashboard() {
       <main className="flex-1 p-8">
 
         {/* ============================
-             CATÁLOGO
+            CATÁLOGO
         ============================ */}
         {section === "catalogo" && (
           <>
@@ -339,7 +330,7 @@ function TiendaDashboard() {
         )}
 
         {/* ============================
-             PEDIDOS RECIBIDOS
+            PEDIDOS RECIBIDOS
         ============================ */}
         {section === "pedidos" && (
           <>
@@ -379,7 +370,6 @@ function TiendaDashboard() {
                       💰 Total: {p.total} €
                     </p>
 
-                    {/* CAMBIO DE ESTADO FUNCIONAL */}
                     <div className="mt-4">
                       <label className="font-semibold">Estado:</label>
 
@@ -400,7 +390,7 @@ function TiendaDashboard() {
         )}
 
         {/* ============================
-             MODAL FOTO
+            MODAL FOTO
         ============================ */}
         {modalImg && (
           <div

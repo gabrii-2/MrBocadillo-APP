@@ -5,11 +5,9 @@ function BocadilloNuevo() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-  const username = localStorage.getItem("username");
+  const tiendaId = localStorage.getItem("tiendaId");
 
-  const [tiendaId, setTiendaId] = useState(
-    localStorage.getItem("tiendaId") || null
-  );
+  const API = "https://mrbocadillo-backend.onrender.com";
 
   const [bocadillo, setBocadillo] = useState({
     nombre: "",
@@ -19,11 +17,6 @@ function BocadilloNuevo() {
   });
 
   const [mensaje, setMensaje] = useState("");
-
-  // 🔹 Por si no guardaste la tiendaId en localStorage
-  if (!tiendaId) {
-    // Puedes obtener la tienda del backend como en tu dashboard
-  }
 
   const handleChange = (e) => {
     setBocadillo({
@@ -38,17 +31,14 @@ function BocadilloNuevo() {
       return;
     }
 
-    const resp = await fetch(
-      `http://localhost:8080/api/bocadillos/tienda/${tiendaId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(bocadillo),
-      }
-    );
+    const resp = await fetch(`${API}/api/bocadillos/tienda/${tiendaId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(bocadillo),
+    });
 
     if (resp.ok) {
       setMensaje("🍔 Bocadillo creado correctamente");
@@ -59,9 +49,9 @@ function BocadilloNuevo() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-200 via-yellow-100 to-orange-300 p-6 flex justify-center items-center">
-      
-      <div className="w-full max-w-3xl bg-white p-10 rounded-3xl shadow-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-orange-200 via-yellow-100 to-orange-300 p-4 md:p-6 flex justify-center items-center">
+
+      <div className="w-full max-w-3xl bg-white p-6 md:p-10 rounded-3xl shadow-2xl">
 
         {/* BOTÓN VOLVER */}
         <button
@@ -71,12 +61,12 @@ function BocadilloNuevo() {
           ⬅ Volver
         </button>
 
-        <h1 className="text-4xl font-extrabold text-orange-600 text-center mb-8">
+        <h1 className="text-3xl md:text-4xl font-extrabold text-orange-600 text-center mb-8">
           Crear nuevo bocadillo 🥪
         </h1>
 
         {/* FORMULARIO */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
 
           {/* Nombre */}
           <div className="flex flex-col">
@@ -140,7 +130,7 @@ function BocadilloNuevo() {
         <div className="text-center mt-8">
           <button
             onClick={handleCrear}
-            className="px-8 py-3 bg-orange-500 text-white rounded-2xl font-bold text-lg shadow hover:bg-orange-600 transition"
+            className="px-8 py-3 bg-orange-500 text-white rounded-2xl font-bold text-lg shadow hover:bg-orange-600 transition w-full md:w-auto"
           >
             Crear bocadillo 🍴
           </button>

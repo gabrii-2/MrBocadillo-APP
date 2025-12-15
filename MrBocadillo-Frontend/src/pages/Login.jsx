@@ -7,29 +7,29 @@ function Login() {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
+  const API = "https://mrbocadillo-backend.onrender.com";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch(`${API}/api/auth/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
       if (response.ok) {
         const data = await response.json();
 
-        // Guarda token y rol en localStorage
+        // Guardar datos del usuario
         localStorage.setItem("token", data.token);
         localStorage.setItem("rol", data.rol);
         localStorage.setItem("username", data.username);
 
         setMessage("✅ Inicio de sesión exitoso");
 
-        // Redirigir según el rol
+        // Redirección según el rol
         if (data.rol === "ADMIN") {
           navigate("/adminDashboard");
         } else if (data.rol === "TIENDA") {
@@ -48,50 +48,62 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-200 via-yellow-100 to-orange-300">
-      <div className="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-md text-center">
-        
+    <div className="min-h-screen flex items-center justify-center 
+    bg-gradient-to-br from-orange-200 via-yellow-100 to-orange-300 p-4">
+
+      <div className="bg-white shadow-2xl rounded-3xl p-8 md:p-10 
+      w-full max-w-md text-center">
+
         {/* 🔸 Logo */}
         <div className="flex justify-center mb-4">
           <img
             src="/logo.png"
             alt="Logo MrBocadillo"
-            className="w-40 h-auto drop-shadow-md"
+            className="w-32 md:w-40 h-auto drop-shadow-md"
           />
         </div>
 
-        <p className="text-gray-500 mb-8">Inicia sesión</p>
+        <p className="text-gray-500 mb-6 text-lg">Inicia sesión</p>
 
+        {/* FORMULARIO */}
         <form className="space-y-5" onSubmit={handleSubmit}>
           <input
             type="text"
             placeholder="Usuario o correo"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl 
+            focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
             required
           />
+
           <input
             type="password"
             placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl 
+            focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
             required
           />
 
           <button
             type="submit"
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition-all duration-200"
+            className="w-full bg-orange-500 hover:bg-orange-600 
+            text-white font-semibold py-3 rounded-xl shadow-md transition-all"
           >
             Entrar
           </button>
         </form>
 
+        {/* MENSAJE */}
         {message && (
-          <p className="mt-4 text-sm font-semibold text-gray-700">{message}</p>
+          <p className="mt-4 text-sm font-semibold text-gray-800">
+            {message}
+          </p>
         )}
 
+        {/* REGISTRO */}
         <p className="text-sm text-gray-600 mt-6">
           ¿No tienes cuenta?{" "}
           <Link

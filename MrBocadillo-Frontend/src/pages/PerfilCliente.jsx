@@ -5,25 +5,30 @@ import { FiUser, FiMail, FiPhone, FiLock, FiArrowLeft } from "react-icons/fi";
 function PerfilCliente() {
   const navigate = useNavigate();
 
+  const API = "https://mrbocadillo-backend.onrender.com";
+
   const token = localStorage.getItem("token");
   const username = localStorage.getItem("username");
 
   const [cliente, setCliente] = useState(null);
-  const [original, setOriginal] = useState(null); // ← Para saber qué cambió
+  const [original, setOriginal] = useState(null);
   const [mensaje, setMensaje] = useState("");
 
-  // Cargar datos del cliente
+  // ================================
+  // 🔸 Cargar datos del cliente
+  // ================================
   useEffect(() => {
     const fetchCliente = async () => {
       try {
-        const resp = await fetch("http://localhost:8080/api/clientes", {
+        const resp = await fetch(`${API}/api/clientes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         const data = await resp.json();
         const encontrado = data.find((c) => c.username === username);
 
-        // Eliminamos la contraseña para que no la modifique por error
+        if (!encontrado) return;
+
         delete encontrado.password;
 
         setCliente({ ...encontrado, password: "" });
@@ -40,7 +45,9 @@ function PerfilCliente() {
     setCliente({ ...cliente, [e.target.name]: e.target.value });
   };
 
-  // Construir body con SOLO los campos que el usuario ha cambiado
+  // ================================
+  // 🔸 Enviar solo campos modificados
+  // ================================
   const buildPatchBody = () => {
     const body = {};
 
@@ -49,7 +56,6 @@ function PerfilCliente() {
     if (cliente.email !== original.email) body.email = cliente.email;
     if (cliente.telefono !== original.telefono) body.telefono = cliente.telefono;
 
-    // Contraseña: solo se envía si no está vacía
     if (cliente.password && cliente.password.trim() !== "") {
       body.password = cliente.password;
     }
@@ -66,22 +72,17 @@ function PerfilCliente() {
     }
 
     try {
-      const resp = await fetch(
-        `http://localhost:8080/api/clientes/${cliente.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(body),
-        }
-      );
+      const resp = await fetch(`${API}/api/clientes/${cliente.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
 
       if (resp.ok) {
         setMensaje("✅ Perfil actualizado correctamente.");
-
-        // Actualizamos "original" para nuevas comparaciones
         setOriginal({ ...cliente, password: "" });
       } else {
         setMensaje("❌ Error al actualizar el perfil.");
@@ -96,9 +97,9 @@ function PerfilCliente() {
     return <p className="p-6 text-center text-lg">Cargando perfil...</p>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-200 via-yellow-100 to-orange-300 p-6 flex justify-center">
-      
-      <div className="w-full max-w-3xl bg-white p-10 rounded-3xl shadow-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-orange-200 via-yellow-100 to-orange-300 p-4 sm:p-6 flex justify-center">
+
+      <div className="w-full max-w-3xl bg-white p-6 sm:p-10 rounded-3xl shadow-2xl">
 
         {/* BOTÓN VOLVER */}
         <button
@@ -110,11 +111,11 @@ function PerfilCliente() {
         </button>
 
         {/* HEADER */}
-        <h1 className="text-4xl font-extrabold text-orange-600 mb-8 text-center">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-orange-600 mb-8 text-center">
           Mi Perfil 👤
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
 
           {/* Nombre */}
           <div className="flex flex-col">

@@ -2,23 +2,41 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function PerfilTienda() {
-
   const navigate = useNavigate();
+
+  const API = "https://mrbocadillo-backend.onrender.com";
 
   const token = localStorage.getItem("token");
   const username = localStorage.getItem("username");
 
   const [tienda, setTienda] = useState(null);
+  const [original, setOriginal] = useState(null);
   const [mensaje, setMensaje] = useState("");
 
-  // Carga la tienda por username
+  // ================================
+  // 🔸 Cargar tienda por username
+  // ================================
   useEffect(() => {
     const fetchTienda = async () => {
-      const resp = await fetch("http://localhost:8080/api/tiendas");
-      const data = await resp.json();
-      const t = data.find((ti) => ti.username === username);
-      setTienda(t);
+      try {
+        const resp = await fetch(`${API}/api/tiendas`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = await resp.json();
+        const t = data.find((ti) => ti.username === username);
+
+        if (!t) return;
+
+        delete t.password;
+
+        setTienda({ ...t, password: "" });
+        setOriginal({ ...t, password: "" });
+      } catch (err) {
+        console.error("Error cargando tienda:", err);
+      }
     };
+
     fetchTienda();
   }, []);
 
@@ -29,34 +47,63 @@ function PerfilTienda() {
     });
   };
 
+  // ================================
+  // 🔸 Enviar solo campos modificados
+  // ================================
+  const buildPatchBody = () => {
+    const body = {};
+
+    if (tienda.nombre !== original.nombre) body.nombre = tienda.nombre;
+    if (tienda.email !== original.email) body.email = tienda.email;
+    if (tienda.telefono !== original.telefono) body.telefono = tienda.telefono;
+    if (tienda.direccion !== original.direccion) body.direccion = tienda.direccion;
+    if (tienda.imagenUrl !== original.imagenUrl) body.imagenUrl = tienda.imagenUrl;
+
+    if (tienda.password && tienda.password.trim() !== "") {
+      body.password = tienda.password;
+    }
+
+    return body;
+  };
+
   const handleGuardar = async () => {
-    const resp = await fetch(
-      `http://localhost:8080/api/tiendas/${tienda.id}`,
-      {
+    const body = buildPatchBody();
+
+    if (Object.keys(body).length === 0) {
+      setMensaje("⚠ No hay cambios para guardar.");
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API}/api/tiendas/${tienda.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(tienda),
-      }
-    );
+        body: JSON.stringify(body),
+      });
 
-    if (resp.ok) {
-      setMensaje("✔ Datos actualizados correctamente");
-    } else {
-      setMensaje("❌ Error al actualizar los datos");
+      if (resp.ok) {
+        setMensaje("✔ Datos actualizados correctamente");
+        setOriginal({ ...tienda, password: "" });
+      } else {
+        setMensaje("❌ Error al actualizar los datos");
+      }
+    } catch (err) {
+      console.error(err);
+      setMensaje("⚠ Error de conexión");
     }
   };
 
-  if (!tienda) return <p className="p-6">Cargando...</p>;
+  if (!tienda) return <p className="p-6 text-center text-lg">Cargando...</p>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-200 via-yellow-100 to-orange-300 p-6 flex justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-orange-200 via-yellow-100 to-orange-300 p-4 sm:p-6 flex justify-center">
 
-      <div className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-10">
+      <div className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-6 sm:p-10">
 
-        {/* volver */}
+        {/* BOTÓN VOLVER */}
         <button
           onClick={() => navigate("/tiendaDashboard")}
           className="mb-6 bg-orange-500 text-white px-4 py-2 rounded-xl hover:bg-orange-600 transition"
@@ -64,7 +111,7 @@ function PerfilTienda() {
           ⬅ Volver
         </button>
 
-        <h1 className="text-4xl font-extrabold text-orange-600 text-center mb-10">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-orange-600 text-center mb-10">
           Mi perfil de tienda 🏪
         </h1>
 
@@ -72,10 +119,12 @@ function PerfilTienda() {
         <div className="flex justify-center mb-8">
           <img
             src={tienda.imagenUrl || "https://cdn-icons-png.flaticon.com/512/726/726496.png"}
-            className="w-32 h-32 rounded-2xl object-cover shadow-xl"
+            className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover shadow-xl"
+            alt="Imagen tienda"
           />
         </div>
 
+        {/* FORMULARIO */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           <div className="flex flex-col">
@@ -84,7 +133,7 @@ function PerfilTienda() {
               name="nombre"
               value={tienda.nombre || ""}
               onChange={handleChange}
-              className="p-3 rounded-xl border shadow-sm focus:ring-2 focus:ring-orange-400"
+              className="p-3 rounded-xl border shadow focus:ring-2 focus:ring-orange-400"
             />
           </div>
 
@@ -94,7 +143,7 @@ function PerfilTienda() {
               name="email"
               value={tienda.email || ""}
               onChange={handleChange}
-              className="p-3 rounded-xl border shadow-sm focus:ring-2 focus:ring-orange-400"
+              className="p-3 rounded-xl border shadow focus:ring-2 focus:ring-orange-400"
             />
           </div>
 
@@ -104,7 +153,7 @@ function PerfilTienda() {
               name="telefono"
               value={tienda.telefono || ""}
               onChange={handleChange}
-              className="p-3 rounded-xl border shadow-sm focus:ring-2 focus:ring-orange-400"
+              className="p-3 rounded-xl border shadow focus:ring-2 focus:ring-orange-400"
             />
           </div>
 
@@ -114,7 +163,7 @@ function PerfilTienda() {
               name="direccion"
               value={tienda.direccion || ""}
               onChange={handleChange}
-              className="p-3 rounded-xl border shadow-sm focus:ring-2 focus:ring-orange-400"
+              className="p-3 rounded-xl border shadow focus:ring-2 focus:ring-orange-400"
             />
           </div>
 
@@ -124,7 +173,7 @@ function PerfilTienda() {
               name="imagenUrl"
               value={tienda.imagenUrl || ""}
               onChange={handleChange}
-              className="p-3 rounded-xl border shadow-sm focus:ring-2 focus:ring-orange-400"
+              className="p-3 rounded-xl border shadow focus:ring-2 focus:ring-orange-400"
             />
           </div>
 
@@ -137,19 +186,18 @@ function PerfilTienda() {
               name="password"
               value={tienda.password || ""}
               onChange={handleChange}
-              className="p-3 rounded-xl border shadow-sm focus:ring-2 focus:ring-orange-400"
+              className="p-3 rounded-xl border shadow focus:ring-2 focus:ring-orange-400"
               placeholder="Déjalo vacío si no quieres cambiarla"
             />
           </div>
-
         </div>
 
-        {/* mensaje */}
+        {/* MENSAJE */}
         {mensaje && (
           <p className="text-center mt-6 text-lg font-semibold">{mensaje}</p>
         )}
 
-        {/* botón guardar */}
+        {/* BOTÓN GUARDAR */}
         <div className="text-center mt-8">
           <button
             onClick={handleGuardar}
