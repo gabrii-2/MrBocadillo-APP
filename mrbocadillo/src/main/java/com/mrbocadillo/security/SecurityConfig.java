@@ -32,45 +32,26 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
 
-                /* ──────────────────────────────────────
-                 *  🔓 RUTAS PÚBLICAS
-                 * ────────────────────────────────────── */
+                // 🔓 PUBLIC
                 .requestMatchers("/api/auth/login", "/api/auth/registrar/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tiendas/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/bocadillos/**").permitAll()
-
-                // 👀 NECESARIO PARA HACER PEDIDOS (el cliente debe poder leerse)
                 .requestMatchers(HttpMethod.GET, "/api/clientes/**").permitAll()
 
-                /* ──────────────────────────────────────
-                 *  👤 CLIENTE — Modificar su perfil
-                 * ────────────────────────────────────── */
+                // CLIENTE
                 .requestMatchers(HttpMethod.PUT, "/api/clientes/**").hasAuthority("CLIENTE")
+                .requestMatchers(HttpMethod.POST, "/api/pedidos/**").hasAuthority("CLIENTE")
 
-                /* ──────────────────────────────────────
-                 *  🏪 TIENDA — Gestionar catálogo
-                 * ────────────────────────────────────── */
+                // TIENDA
                 .requestMatchers(HttpMethod.POST, "/api/bocadillos/tienda/**").hasAuthority("TIENDA")
                 .requestMatchers(HttpMethod.PUT, "/api/bocadillos/**").hasAuthority("TIENDA")
                 .requestMatchers(HttpMethod.DELETE, "/api/bocadillos/**").hasAuthority("TIENDA")
+                .requestMatchers(HttpMethod.PUT, "/api/pedidos/**").hasAuthority("TIENDA")
+                .requestMatchers(HttpMethod.GET, "/api/pedidos/tienda/**").hasAuthority("TIENDA")
 
-                /* ──────────────────────────────────────
-                 *  👑 ADMIN
-                 * ────────────────────────────────────── */
+                // ADMIN
                 .requestMatchers("/api/admins/**").hasAuthority("ADMIN")
 
-                /* ──────────────────────────────────────
-                 *  🛒 PEDIDOS
-                 *  Cliente crea pedidos → requiere login
-                 *  Tienda marca como preparado → requiere login
-                 * ────────────────────────────────────── */
-                .requestMatchers(HttpMethod.POST, "/api/pedidos/**").hasAuthority("CLIENTE")
-                .requestMatchers(HttpMethod.PUT, "/api/pedidos/**").hasAuthority("TIENDA")
-                .requestMatchers(HttpMethod.GET, "/api/pedidos/**").authenticated()
-
-                /* ──────────────────────────────────────
-                 *  🔐 Cualquier otra ruta
-                 * ────────────────────────────────────── */
                 .anyRequest().authenticated()
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -87,13 +68,27 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+
+        config.setAllowedOrigins(Arrays.asList(
+                "https://mrbocadillofrontend.vercel.app",
+                "http://localhost:5173"
+        ));
+
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(Arrays.asList("*"));
+
+        config.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "Origin",
+                "X-Requested-With"
+        ));
+
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 }
